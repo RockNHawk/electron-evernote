@@ -4,6 +4,8 @@
 
 A third party electron client based on evernote api
 
+![](https://github.com/Electron-evernote/electron-evernote/blob/master/screenshot/electron-evernote.png)
+
 # Features
 
 - [x] create notebook
@@ -41,3 +43,7 @@ before you create your own evernote, you are supported to set params in <code>co
   "accessToken": "your own Token"
 }
 ```
+
+# Thanks
+
+great thanks for [tui.editor](https://github.com/nhnent/tui.editor) (GFM Markdown WYSIWYG Editor - Productive and Extensible) and [electron](https://github.com/electron/electron) (Build cross-platform desktop apps with JavaScript, HTML, and CSS)
