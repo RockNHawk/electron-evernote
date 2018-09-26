@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Electron Evernote</title>
+    <style>
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        webview {
+            /* display: block; */
+            border: none;
+        }
+    </style>
+</head>
+
+<body>
+    <webview src="" style="height:600px;width:100%"></webview>
+</body>
+<script>
+    const Client = require('../../evernote_client')
+    const OAuthClient = Client.oauthClient()
+
+    const webview = document.querySelector('webview')
+    const common = require('../../common')
+    const AppConfig = require('../../configuration') 
+
+    const {
+        ipcRenderer
+    } = require('electron')
+
+    onload = () => {
+
+        getTmpToken()
+        
+        webview.addEventListener('did-get-redirect-request', (event) => {
+           if (common.CALL_BACK_URL_REGXP.test(event.newURL)) {
+               event.preventDefault()
+               ipcRenderer.send('oauth_call_back', event.newURL)
+           }
+        })
+    }
+
+    function getTmpToken() {
+
+        OAuthClient.getRequestToken(common.CALL_BACK_URL, function (error, oauthToken, oauthTokenSecret) {
+            if (error) {
+                console.log(error)
+            } else {
+                AppConfig.saveSettings('oauthToken', oauthToken)
+                AppConfig.saveSettings('oauthTokenSecret', oauthTokenSecret)
+                var url = OAuthClient.getAuthorizeUrl(oauthToken)
+                webview.loadURL(url)
+            }
+        })
+    }
+</script>
+
+</html>

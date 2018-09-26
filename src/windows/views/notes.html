@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Electron Evernote</title>
+    <link rel="stylesheet" href="../../../assets/css/codemirror.css">
+    <link rel="stylesheet" href="../../../assets/css/tui-editor.css">
+    <link rel="stylesheet" href="../../../assets/css/tui-editor-contents.css">
+    <link rel="stylesheet" href="../../../assets/css/vs.css">
+    <link rel="stylesheet" href="../../../assets/css/nprogress.css">
+    <link rel="stylesheet" href="../../../assets/css/bootstrap-material-design.min.css">
+    <link rel="stylesheet" href="../../../assets/css/personal.css">
+    <link rel="stylesheet" href="../../../assets/css/font-awesome-4.7.0/css/font-awesome.css">
+    <style>
+
+        .note-title {
+            width: 100%;
+            left: 315px;
+            padding: 0;
+            margin-bottom: 0;
+            height: 80px;
+            position: fixed;
+            z-index: 2;
+        }
+
+        .note-title span {
+            padding-top: 0;
+        }
+
+        #note-title {
+            color: #009688;
+            font-size: 24px;
+        }
+
+        #add-notebook-btn:hover {
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="wrapper-div">
+        <div class="loading-container">
+            <div class="item-1"></div>
+            <div class="item-2"></div>
+            <div class="item-3"></div>
+            <div class="item-4"></div>
+            <div class="item-5"></div>
+        </div>
+    </div>
+    <div id="note-container" class="container-fluid" style="display: none">
+        <div class="row">
+            <!-- col-sm-1 col-md-1 col-lg-1  -->
+            <div class="evernote-sidebar">
+                <ul class="nav flex-column">
+                    <li class="nav-item evernote-menu-item">
+                        <a>
+                            <img class="navbar-nav-svg" src="../../../assets/imgs/logo.png" />
+                        </a>
+                    </li>
+                    <li class="nav-item evernote-menu-item" style="margin-top: 80px">
+                        <a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" title="新建" id="add-note-btn">
+                            <img class="navbar-nav-svg evernote-add-note" src="../../../assets/imgs/add-note.png" />
+                        </a>
+                    </li>
+                    <li class="nav-item evernote-menu-item">
+                        <a href="javascript:activeEle('search-note-btn')" data-toggle="tooltip" data-placement="top" title="搜索" id="search-note-btn">
+                            <img class="navbar-nav-svg evernote-search-note" src="../../../assets/imgs/search-note.png" />
+                        </a>
+                    </li>
+
+                    <li class="nav-item evernote-menu-item" style="margin-top: 100px">
+                        <a href="javascript:activeEle('note-btn')" data-toggle="tooltip" data-placement="top" title="笔记" id="note-btn">
+                            <img class="navbar-nav-svg evernote-note" src="../../../assets/imgs/note.png">
+                        </a>
+                    </li>
+                    <li class="nav-item evernote-menu-item">
+                        <a href="javascript:activeEle('notebook-btn')" data-toggle="tooltip" data-placement="top" title="笔记本" id="notebook-btn">
+                            <img class="navbar-nav-svg evernote-notebook" src="../../../assets/imgs/notebook.png">
+                        </a>
+                    </li>
+                    <!-- 暂时移除标签功能 -->
+                    <!-- <li class="nav-item evernote-menu-item">
+                        <a href="javascript:activeEle('tags-btn')" data-toggle="tooltip" data-placement="top" title="标签" id="tags-btn">
+                            <img class="navbar-nav-svg evernote-tags" src="../../../assets/imgs/tags.png">
+                        </a>
+                    </li> -->
+                </ul>
+                <!-- 菜单 -->
+            </div>
+            <!-- class="col-sm-3 col-md-3 col-lg-2" -->
+            <!-- 笔记本 -->
+            <div class="collapse notebook-list" id="notebook-list">
+                <h5 class="card-header">笔记本
+                    <a id="add-notebook-btn" data-toggle="tooltip" data-placement="top" title="添加笔记本" href="javascript:void(0)">
+                        <i class="material-icons fa fa-book"></i>
+                    </a>
+                </h5>
+
+                <div class="list-group" id="notebook-list-group">
+                </div>
+            </div>
+
+            <!-- 笔记 -->
+            <div class="note-list" id="note-list" style="display: none">
+                <h5 class="card-header">笔记</h5>
+                <div class="list-group" id="note-list-group">
+                </div>
+            </div>
+            <!-- class="col-sm-9 col-md-9 col-lg-9" -->
+            <!-- TODO 调整菜单布局 -->
+            <div class="alert alert-light note-title" role="alert">
+                <div class="note-toolbars">
+                    <button type="button" class="btn btn-success bmd-btn-icon" data-toggle="tooltip" data-placement="top" title="保存" id="save-note">
+                        <i class="material-icons fa fa-save"></i>
+                    </button>
+                    <button type="button" class="btn btn-success bmd-btn-icon" data-toggle="tooltip" data-placement="top" title="删除" id="delete-note">
+                        <i class="material-icons fa fa-trash-o"></i>
+                    </button>
+                    <!-- 暂时移除创建快捷方式功能 -->
+                    <!-- <button type="button" class="btn btn-success bmd-btn-icon" data-toggle="tooltip" data-placement="top" title="创建快捷方式" id="act-shortcut">
+                        <i class="material-icons fa fa-star-o"></i>
+                    </button> -->
+                    <!-- 移动到相应笔记本的下拉菜单 -->
+                    <div class="btn-group dropup">
+                        <button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="material-icons fa fa-bookmark-o"></i>
+                            <!-- <span class="sr-only">Toggle Dropdown</span> -->
+                        </button>
+                        <div class="dropdown-menu" id="notebook-dropdown-menu">
+                        </div>
+                    </div>
+                </div>
+                <div class="input-group" style="background-color:#fdfdfd">
+                    <input type="text" class="form-control" id="note-title" placeholder="标题...">
+                </div>
+            </div>
+            <div id="evernote-editor"></div>
+        </div>
+    </div>
+</body>
+<script src="../../../assets/js/jquery-3.2.1.slim.min.js"></script>
+<script>
+    if (typeof module === 'object') {
+        window.jQuery = window.$ = module.exports;
+    };
+</script>
+<script src="../../../assets/js/snackbar.min.js"></script>
+<script src="../../../assets/js/popper.js"></script>
+<script src="../../../assets/js/bootstrap-material-design.js"></script>
+<script src="../../../assets/js/nprogress.js"></script>
+
+<script>
+    const {
+        ipcRenderer
+    } = require('electron')
+    require('tui-editor/dist/tui-editor-extChart')
+    require('tui-editor/dist/tui-editor-extUML')
+    require('tui-editor/dist/tui-editor-extTable')
+    require('tui-editor/dist/tui-editor-extScrollSync')
+    require('tui-editor/dist/tui-editor-extColorSyntax')
+    let Editor = require('tui-editor');
+    let editor = new Editor({
+        el: document.querySelector('#evernote-editor'),
+        initialEditType: 'markdown',
+        initialValue: '',
+        previewStyle: 'vertical',
+        usageStatistics: false,
+        height: 'cal(100% - 1px)',
+        exts: [{
+            name: 'chart',
+            minWidth: 100,
+            maxWidth: 600,
+            minHeight: 100,
+            maxHeight: 300
+        },
+            'scrollSync',
+            'colorSyntax',
+            'uml',
+            'mark',
+            'table'
+        ]
+    });
+
+    let activeEleId = null;
+
+    let activePreNoteBookName = null;
+
+    let newNoteBookEle = null;
+
+    let selectNoteId = null;
+
+    let selectNoteBookId = null;
+
+    $(document).ready(function () {
+        $('body').bootstrapMaterialDesign();
+    });
+
+    $(window).resize(function () {
+        var windowHeight = 0;
+        if (window.innerHeight) {
+            windowHeight = window.innerHeight;
+        } else if ((document.body) && (document.body.clientHeight)) {
+            windowHeight = document.body.clientHeight;
+        }
+        if (document.body.offsetHeight < windowHeight) {
+            $('#note-list').css('height', windowHeight);
+            $('#notebook-list').css('height', windowHeight);
+        }
+    });
+
+    onload = () => {
+
+        bindEventForEditorToolbars();
+
+        bindEventAddNoteBookToolbars();
+
+        bindEventForSiderToolbars();
+
+        $('#notebook-btn').on('click', function () {
+            if ($('#notebook-list').hasClass('show')) {
+                $('#notebook-list').collapse('hide')
+            } else {
+                $('#note-list').css("display", "none")
+                $('#notebook-list').collapse('show')
+            }
+            activeEle(this.id)
+        })
+
+        ipcRenderer.on('notebooks', (event, notebooks) => {
+            loadNoteBooks(notebooks)
+            createNoteBookDropMenu(notebooks)
+        })
+
+        ipcRenderer.on('note-list', (event, note) => {
+            NProgress.done();
+            loadNoteByNoteBook(note['notes'])
+        })
+
+        ipcRenderer.on('note-detail', (event, noteObj) => {
+            NProgress.done()
+            $('#'+noteObj['notebook-guid']+".notebook-dropdown-menu-item").addClass("disabled");
+            loadNoteContent(noteObj['content'])
+        })
+
+        ipcRenderer.on('updateNoteStatus', (event, status) => {
+            NProgress.done()
+            if (status) {
+                var message = "更新笔记成功"
+            } else {
+                var message = "更新笔记失败"
+            }
+            var options = {
+                content: message,
+                style: "toast",
+                timeout: 1000
+            }
+            $.snackbar(options);
+            $('#'+selectNoteId+".note-list-item").remove();
+        })
+
+        ipcRenderer.on('createNoteStatus', (event, returnBack) => {
+            NProgress.done();
+            var message = ""
+            if (typeof returnBack === "string") {
+                var a = document.createElement('a');
+                a.setAttribute('class', 'list-group-item list-group-item-action note-list-item active');
+                a.setAttribute('id', returnBack);
+                a.setAttribute('href', '#');
+                a.innerText = $('#note-title').val();
+                selectNoteId = returnBack;
+                bindEventForNote();
+                $('#note-list-group').append(a);
+                message = "创建笔记成功";
+            } else {
+                console.log(returnBack);
+                message = "创建笔记失败";
+            }
+            var options = {
+                content: message,
+                style: "toast",
+                timeout: 1000
+            }
+            $.snackbar(options);
+        })
+
+        ipcRenderer.on('createNotebookStatus', (event, returnBack) => {
+            NProgress.done();
+            if (typeof returnBack === "string") {
+                $(newNoteBookEle).removeAttr('contenteditable');
+                $(newNoteBookEle).unbind('blur');
+                newNoteBookEle.setAttribute('id', returnBack);
+                selectNoteBookId = returnBack;
+                var newNoteBook = [{"name":$.trim($(newNoteBookEle).text()),"guid":returnBack}]
+                createNoteBookDropMenu(newNoteBook,true);
+                newNoteBookEle = null;
+                message = "创建笔记本成功";
+            } else {
+                console.log(returnBack);
+                message = "创建笔记本失败";
+            }
+            var options = {
+                content: message,
+                style: "toast",
+                timeout: 1000
+            }
+            $.snackbar(options);
+        })
+
+        ipcRenderer.on('deleteNoteStatus', (event, status) => {
+            NProgress.done();
+            var message = null;
+            if (status) {
+                message = "删除笔记成功"
+                $('#' + selectNoteId).remove();
+                $('#note-title').val("");
+                editor.setMarkdown("");
+                selectNoteId = null;
+            } else {
+                message = "删除笔记失败"
+            }
+            var options = {
+                content: message,
+                style: "toast",
+                timeout: 1000
+            }
+            $.snackbar(options);
+        })
+    }
+
+    function loadNoteBooks(notebooks) {
+        $('#wrapper-div').hide()
+        $('#note-container').show()
+        var innerHtml = ""
+        var name = ""
+        for (i = 0; i < notebooks.length; i++) {
+            if (notebooks[i]['name'] === "<Inbox>") {
+                name = "&lt;Inbox&gt;";
+            } else {
+                name = notebooks[i]['name']
+            }
+            innerHtml += `<a href="#" class='list-group-item list-group-item-action notebook-list-item' id="` +
+                notebooks[i]['guid'] + `" >` + name + `</a>`
+        }
+        $('#notebook-list-group').html(innerHtml)
+        $('#notebook-list').collapse('show')
+        bindEventForNoteBook()
+    }
+
+    function createNoteBookDropMenu(notebooks) {
+
+        var innerHtml = "";
+
+        for (var i = 0; i < notebooks.length; i++) {
+            if (notebooks[i]['name'] === "<Inbox>") {
+                name = "&lt;Inbox&gt;";
+            } else {
+                name = notebooks[i]['name']
+            }
+            innerHtml += `<a href="#" class='dropdown-item notebook-dropdown-menu-item' id="` +
+                notebooks[i]['guid'] + `" >` + name + `</a>`;
+        }
+        if (arguments[1] === true) {
+            $('#notebook-dropdown-menu').append(innerHtml);
+        } else {
+            $('#notebook-dropdown-menu').html(innerHtml);
+        }
+        bindEventForMoveNoteBookDropDownMenu();
+    }
+
+
+    function getNoteByNoteBookId(id) {
+        NProgress.start();
+        ipcRenderer.send('notebook-id', id);
+    }
+
+    function loadNoteByNoteBook(notelist) {
+        // 隐藏笔记本
+        $('#notebook-list').collapse('hide')
+
+        // 显示笔记
+        var innerHtml = ""
+        for (i = 0; i < notelist.length; i++) {
+            innerHtml += `<a href="#" class='list-group-item list-group-item-action note-list-item' id="` + notelist[i]
+            ['guid'] + `" title="` + notelist[i]['title'] + `">` + notelist[i]['title'] + `</a>`
+        }
+        $('#note-list-group').html(innerHtml)
+        bindEventForNote();
+        $('#note-list').show()
+    }
+
+    function loadNoteContent(content) {
+        editor.setMarkdown(content)
+    }
+
+    function getNoteDetailByNoteId(id) {
+        NProgress.start()
+        ipcRenderer.send('note-id', id);
+    }
+
+    function bindEventForNote() {
+        $('.note-list-item').on('click', function () {
+            $($(this).siblings()).removeClass('active');
+            $(this).addClass('active');
+            selectNoteId = this.id;
+            $('#note-title').val(this.title);
+            getNoteDetailByNoteId(this.id);
+        })
+    }
+
+    function bindEventForNoteBook() {
+        $('.notebook-list-item').on('click', function () {
+            $($(this).siblings()).removeClass('active');
+            $(this).addClass('active');
+            selectNoteBookId = this.id;
+            getNoteByNoteBookId(this.id);
+        })
+    }
+
+    function activeEle(id) {
+        if (activeEleId === id) {
+            return;
+        }
+        if (activeEleId !== null) {
+            $('#' + activeEleId).removeClass(activeEleId + "-active");
+        }
+        $('#' + id).addClass(id + "-active")
+        activeEleId = id
+    }
+
+
+    function bindEventAddNoteBookToolbars() {
+        $('#add-notebook-btn').on('click', function () {
+            var a = document.createElement('a');
+            a.setAttribute('class', 'list-group-item list-group-item-action notebook-list-item active')
+            a.setAttribute('contenteditable', 'true');
+            a.setAttribute('href', '#');
+            a.innerText = "笔记本名称";
+            $('#notebook-list-group').append(a);
+            a.focus();
+            bindSaveNoteBookEvent(a);
+            bindEventForNoteBook();
+        })
+    }
+
+    function bindSaveNoteBookEvent(selector) {
+        $(selector).blur(function () {
+            newNoteBookEle = this;
+            if ($.trim(this.innerText) == "笔记本名称") {
+                $(this).remove();
+            } else {
+                NProgress.start()
+                ipcRenderer.send('createNoteBook', this.innerText);
+            }
+        })
+    }
+
+
+    /**
+     * TODO 笔记本名称修改
+     */
+    function bindDBClickEditForNoteBookName() {
+
+        $('.notebook-list-item').dblclick(function () {
+            this.setAttribute('contenteditable', 'true');
+            this.focus();
+        });
+
+        $('.notebook-list-item').focus(function () {
+            activePreNoteBookName = this.innerText;
+        });
+
+        $('.notebook-list-item').blur(function () {
+            if ($.trim(this.innerText) !== $.trim(activePreNoteBookName)) {
+                console.log("更新笔记本名称");
+                return;
+            }
+            console.log("未发生变化不处理");
+        })
+    }
+
+    function bindEventForEditorToolbars() {
+        $('#save-note').on('click', function () {
+            NProgress.start();
+            if (selectNoteBookId != null && selectNoteId != null) {
+                ipcRenderer.send('updateNote', editor.getMarkdown());
+            } else {
+                var noteObj = {
+                    title: $('#note-title').val(),
+                    content: editor.getMarkdown(),
+                    notebookGuid: selectNoteBookId
+                }
+                ipcRenderer.send('createNote', noteObj);
+            }
+        })
+
+        $('#delete-note').on('click', function () {
+            if (selectNoteId == null) {
+                var options = {
+                    content: '请选择相应的笔记',
+                    style: "toast",
+                    timeout: 1000
+                }
+                $.snackbar(options);
+            } else {
+                NProgress.start();
+                ipcRenderer.send('deleteNote', selectNoteId);
+            }
+        })
+
+        $('#act-shortcut').on('click', function () {
+            if (selectNoteId == null) {
+                var options = {
+                    content: '请选择相应的笔记',
+                    style: "toast",
+                    timeout: 1000
+                }
+                $.snackbar(options);
+            } else {
+                NProgress.start();
+                var shortcut_status = false;
+                if ($(this).hasClass('active')) {
+                    shortcut_status = true;
+                    $(this).removeClass('active')
+                } else {
+                    $(this).addClass('active')
+                }
+                ipcRenderer.send('actShortCut', shortcut_status);
+            }
+        })
+    }
+
+    function bindEventForSiderToolbars() {
+        $('#add-note-btn').on('click', function () {
+            activeEle(this.id);
+            $('.notebook-list-item').each(function () {
+                selectNoteBookId = this.id;
+                if ($(this).hasClass('active')) {
+                    $('#note-title').attr('placeholder', '请输入笔记的名称...')
+                    $('#note-title').focus();
+                    return;
+                }
+            })
+            if (selectNoteBookId === null) {
+                var options = {
+                    content: '请选择相应的笔记本',
+                    style: "toast",
+                    timeout: 1000
+                }
+                $.snackbar(options);
+            }
+        })
+    }
+
+    function bindEventForMoveNoteBookDropDownMenu() {
+        
+        $('.notebook-dropdown-menu-item').on('click', function () {
+            if (selectNoteId === null) {
+                var options = {
+                    content: '请选择相应的笔记',
+                    style: "toast",
+                    timeout: 1000
+                }
+                $.snackbar(options);
+            } else {
+                var noteObj = {"notebook-guid": this.id,"content": editor.getMarkdown()};
+                ipcRenderer.send('updateNote', noteObj);
+
+            }
+        })
+    }
+</script>
+
+</html>
